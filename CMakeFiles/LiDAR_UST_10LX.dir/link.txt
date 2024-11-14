@@ -1,0 +1,1 @@
+/usr/bin/c++  -Wall CMakeFiles/LiDAR_UST_10LX.dir/src/main.cpp.o CMakeFiles/LiDAR_UST_10LX.dir/src/UST10LX.cpp.o CMakeFiles/LiDAR_UST_10LX.dir/src/ObstacleFinder.cpp.o CMakeFiles/LiDAR_UST_10LX.dir/src/Client.cpp.o -o LiDAR_UST_10LX  -static 
