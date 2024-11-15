@@ -18,7 +18,6 @@ typedef uint16_t map_size;
 
 const map_size MAP_WIDTH = 200;
 const map_size MAP_HEIGHT = 200;
-const map_size MULTIPLIER = 60;
 
 class MapSearchNode {
 public:

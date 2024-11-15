@@ -18,6 +18,8 @@
 
 template <typename T> int sgn(T val) { return (T(0) < val) - (val < T(0)); }
 
+const float MULTIPLIER = 0.01;
+
 float speed;
 float steeringAngle;
 
@@ -93,8 +95,8 @@ void update(std::vector<DataPoint> lidar_samples, double deltaTime) {
 
   // #pragma omp parallel for // Parallelize loop if OpenMP is available
   for (uint32_t i = 0; i < lidar_samples.size(); ++i) {
-    if (lidar_samples[i].distance < 5)
-      continue;
+    // if (lidar_samples[i].distance < 5)
+    //   continue;
 
     float x_local = lidar_samples[i].distance * cos(lidar_samples[i].angle);
     float y_local = lidar_samples[i].distance * sin(lidar_samples[i].angle);
@@ -106,7 +108,7 @@ void update(std::vector<DataPoint> lidar_samples, double deltaTime) {
           y_coord < MAP_HEIGHT)) {
       continue;
     }
-    // std::cout << x_coord << " " << y_coord << std::endl;
+    std::cout << x_coord << " " << y_coord << std::endl;
     max_y = std::max(max_y, y_coord);
 
     occupancy_grid[x_coord][y_coord] = 9;
@@ -157,17 +159,17 @@ void update(std::vector<DataPoint> lidar_samples, double deltaTime) {
   std::pair<map_size, map_size> end = {MAP_WIDTH / 2, max_y};
   std::vector<std::pair<map_size, map_size>> path = astar(start, end);
 
-// #define DEBUG_MODE_SIM
+#define DEBUG_MODE_SIM
 #ifdef DEBUG_MODE_SIM
-  occupancy_grid[start.x][start.y] = 1;
-  occupancy_grid[end.x][end.y] = 1;
+  occupancy_grid[start.first][start.second] = 1;
+  occupancy_grid[end.first][end.second] = 1;
 
   for (uint32_t i = 0; i < path.size(); i++) {
-    occupancy_grid[path[i].x][path[i].y] = 8;
+    occupancy_grid[path[i].first][path[i].second] = 8;
   }
-  for (uint32_t i = 0; i < occupancy_grid.size(); i++) {
-    for (uint32_t j = 0; j < max_y + 1; j++) {
-      std::cout << occupancy_grid[i][j];
+  for (map_size i = 0; i < occupancy_grid.size(); i++) {
+    for (map_size j = 0; j < max_y + 1; j++) {
+      std::cout << (int) occupancy_grid[i][j];
     }
     std::cout << std::endl;
   }
@@ -219,8 +221,7 @@ void mainLoop() {
     LiDAR.connect("192.168.1.11");
   }
 
-  std::cout << "Connection successful !" << std::endl;
-  std::cout << "Starting scanning and sending of data" << std::endl;
+  std::cout << "Connection successful!" << std::endl;
 
   while (true) {
     // the first frame time is not accurate but whatever
@@ -242,9 +243,9 @@ void mainLoop() {
     steeringAngle = 0.0f;
     // autonomous driving
     currentCalc = std::chrono::system_clock::now();
-    LiDAR.scan();
-    update(LiDAR.getDataPoints(), secondsPerFrame.count());
-
+    if (LiDAR.scan()) {
+      update(LiDAR.getDataPoints(), secondsPerFrame.count());
+    }
     secondsPerComputation = std::chrono::system_clock::now() - currentCalc;
     frameTimeCalc += secondsPerComputation;
 #ifdef DEBUG_MODE_SIM
@@ -255,8 +256,8 @@ void mainLoop() {
 
 int main() {
   try {
-    razor = new RazorAHRS(serial_port_name, on_data, on_error,
-                          RazorAHRS::ACC_MAG_GYR_RAW);
+    // razor = new RazorAHRS(serial_port_name, on_data, on_error,
+    //                       RazorAHRS::ACC_MAG_GYR_RAW);
     mainLoop();
   } catch (const std::exception &e) {
     std::cerr << e.what() << std::endl;
